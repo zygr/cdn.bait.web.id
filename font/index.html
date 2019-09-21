@@ -1,0 +1,1195 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Scoring seki in the game of go · Adam Prescott</title>
+    <link type="application/atom+xml" href="/feed" rel="alternate" title="Atom feed">
+    <link as="style" href="resource/stylesheet/non-equity.css" rel="preload">
+    <link as="style" href="resource/stylesheet/advocate-extras.css" rel="preload">
+    <script>
+        if (navigator.appVersion.indexOf("Win") != -1) {
+            document.write('<link rel="stylesheet" type="text/css" media="all" href="https://anka.web.id/resource/stylesheet/equity-a.css" />');
+        } else if (navigator.appVersion.indexOf("Mac") != -1) {
+            if (navigator.userAgent.match(/iPad/i) != null) {
+                document.write('<link rel="stylesheet" media="only screen and (max-device-width: 1024px)" href="https://anka.web.id/resource/stylesheet/equity-b.css" type="text/css" />');
+                document.write('<link rel="stylesheet" media="only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2)" type="text/css" href="https://anka.web.id/resource/stylesheet/equity-a.css" />');
+            } else {
+                document.write('<link rel="stylesheet" type="text/css" media="all" href="https://anka.web.id/resource/stylesheet/equity-b.css" />');
+            }
+        } else {
+            document.write('<link rel="stylesheet" type="text/css" media="all" href="https://anka.web.id/resource/stylesheet/equity-a.css" />');
+        }
+    </script>
+    <style>
+        article,
+        aside,
+        footer,
+        header,
+        hgroup,
+        nav,
+        section {
+            display: block
+        }
+
+        * {
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            text-rendering: optimizeLegibility
+        }
+
+        hr {
+            max-width: 30%;
+            margin: 2em auto;
+            border: 1px solid #eee
+        }
+
+        code,
+        var,
+        kbd,
+        samp,
+        tt,
+        dir,
+        listing,
+        plaintext,
+        xmp,
+        abbr,
+        acronym,
+        blockquote,
+        q {
+            hyphens: none
+        }
+
+        body {
+            width: 30em;
+            margin: 0 auto;
+            padding-bottom: 2em;
+            font-family: "equity-text";
+            color: #303030;
+            max-width: 90%;
+            overflow-x: hidden
+        }
+
+        em em,
+        em i {
+            font-style: normal
+        }
+
+        body>header a {
+            text-decoration: none
+        }
+
+        body>header a:focus,
+        body>header a:hover,
+        body>header a:active {
+            text-decoration: underline
+        }
+
+        body>header {
+            opacity: .75;
+            padding-top: 1em;
+            font-size: .8em
+        }
+
+        *::selection {
+            background-color: #8b2d2d;
+            color: #fff
+        }
+
+        img,
+        iframe,
+        video,
+        audio {
+            border: 0;
+            display: block;
+            margin: 2em auto;
+            max-width: 100%
+        }
+
+        figure {
+            margin: 2em auto
+        }
+
+        figure img,
+        figure iframe,
+        figure video,
+        figure audio {
+            margin: 0 auto
+        }
+
+        figure figcaption {
+            margin-top: .5em;
+            font-style: italic;
+            text-align: center
+        }
+
+        p {
+            text-align: justify
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none
+        }
+
+        p a,
+        .post ul a,
+        .post ol a {
+            border-bottom: 1px solid #8b2d2d;
+            color: #8b2d2d
+        }
+
+        p a:focus,
+        p a:hover,
+        p a:active,
+        .post ul a:focus,
+        .post ul a:hover,
+        .post ul a:active,
+        .post ol a:focus,
+        .post ol a:hover,
+        .post ol a:active {
+            border-bottom-color: #d10000;
+            color: #d10000
+        }
+
+        .post ul a:focus,
+        .post ol a:focus,
+        p a:focus {
+            text-decoration: underline !important
+        }
+
+        a:focus {
+            border-bottom: 0;
+            transition: none
+        }
+
+        a:hover,
+        a:active {
+            text-decoration: none
+        }
+
+        p,
+        li {
+            line-height: 1.6em;
+            margin-bottom: 1em
+        }
+
+        ul,
+        ol {
+            margin: 1.25em;
+            margin-right: 0;
+            margin-left: 2em
+        }
+
+        blockquote {
+            padding: .25em .75em;
+            padding-right: 0;
+            margin: 1em;
+            margin-left: 0;
+            border-left: 2px solid #eee;
+            color: #505050
+        }
+
+        blockquote p:last-child {
+            margin-bottom: 0
+        }
+
+        blockquote ol,
+        blockquote ul {
+            margin: .75em 0 0 1.5em
+        }
+
+        blockquote ol:first-child,
+        blockquote ul:first-child {
+            margin-top: 0
+        }
+
+        blockquote ol:last-child li:last-child,
+        blockquote ul:last-child li:last-child {
+            margin-bottom: 0
+        }
+
+        pre {
+            line-height: 1.3;
+            margin: 1.5em 0;
+            padding: 1em .5em;
+            overflow-x: auto;
+            background: #f9f9f9;
+            border-top: 1px solid #eaeaea
+        }
+
+        code {
+            font-family: monospace;
+            padding: .2em;
+            border-radius: .2em;
+            transition: .2s, font-size 0
+        }
+
+        p code {
+            white-space: nowrap;
+            background: #fafafa
+        }
+
+        p a code {
+            background: inherit
+        }
+
+        h2 code,
+        pre code {
+            outline: 0;
+            padding: 0
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: normal
+        }
+
+        h1 {
+            padding: .5em 0;
+            font-size: 1.5em
+        }
+
+        h1 a {
+            text-decoration: none
+        }
+
+        h3 {
+            margin-bottom: 1em
+        }
+
+        body>header {
+            position: relative
+        }
+
+        .post h1 {
+            font-size: 2em
+        }
+
+        .post header time {
+            margin: 0;
+            color: #aaa;
+            display: block
+        }
+
+        h2 {
+            background: 0;
+            margin: 1em 0;
+            border: 0;
+            padding: 0;
+            font-size: 1.2em
+        }
+
+        table {
+            margin-bottom: 1em;
+            width: 100%
+        }
+
+        td,
+        th {
+            padding: .5em
+        }
+
+        #about h2 {
+            font-size: 1.5em
+        }
+
+        .post>h2 {
+            font-size: 1.5em;
+            margin: 1.25em 0
+        }
+
+        .post>header {
+            margin-bottom: 1em
+        }
+
+        #entry>aside {
+            clear: both;
+            padding: .5em 0 1.5em 0;
+            overflow: hidden;
+            opacity: .7
+        }
+
+        #entry>aside dt {
+            display: none
+        }
+
+        #entry>aside dd.prev-post {
+            float: left
+        }
+
+        #entry>aside dd.next-post {
+            float: right
+        }
+
+        #entry>aside dd {
+            width: 40%
+        }
+
+        #entry>aside dd:only-of-type {
+            width: 100%
+        }
+
+        #entry>aside dd a {
+            display: block;
+            width: 100%;
+            padding: .5em 0
+        }
+
+        #entry>aside dd.next-post a {
+            text-align: right
+        }
+
+        #entry>aside dd.prev-post a::before {
+            content: "\21A9";
+            float: left;
+            padding-right: 1em
+        }
+
+        #entry>aside dd.next-post a::after {
+            content: "\21AA";
+            float: right;
+            padding-left: 1em
+        }
+
+        #entries {
+            padding-top: 1em;
+            min-height: 10em
+        }
+
+        #entries>hr:last-of-type {
+            margin-bottom: 1em
+        }
+
+        #entries article h1 {
+            padding: 0;
+            margin-bottom: .25em;
+            font-size: 1.4em
+        }
+
+        #entries .post>header {
+            margin-left: -1em
+        }
+
+        #entries .post>header a {
+            margin-bottom: 0;
+            padding-left: 1em
+        }
+
+        #entries .post>header a:hover,
+        #entries .post>header a:focus,
+        #entries .post>header a:active {
+            outline: 0;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            text-decoration: none
+        }
+
+        #entries .post>header a:hover h1,
+        #entries .post>header a:focus h1,
+        #entries .post>header a:active h1 {
+            color: #8b2d2d
+        }
+
+        #entries .post+.post {
+            margin-top: 1em
+        }
+
+        #entries .post header a {
+            display: block;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            border-radius: .1em;
+            transition: .2s, margin-left 0, border-left-width 0, font-size 0
+        }
+
+        #entries .post header a:hover time,
+        #entries .post header a:focus time,
+        #entries .post header a:active time {
+            color: #000
+        }
+
+        #share {
+            float: right
+        }
+
+        #share ul,
+        #share li {
+            margin: 0;
+            padding: 0
+        }
+
+        #share li {
+            list-style: none
+        }
+
+        #share a {
+            transition: .2s;
+            border: 0
+        }
+
+        #share .twitter a {
+            background: url("/images/twitter-bird-black-25px.png") center left no-repeat;
+            padding: 0;
+            display: block;
+            text-indent: -5000em;
+            font-size: 1px;
+            color: #fff;
+            width: 25px;
+            height: 25px
+        }
+
+        #share .twitter a:focus,
+        #share .twitter a:hover,
+        #share .twitter a:active {
+            background-image: url("/images/twitter-bird-25px.png")
+        }
+
+        footer {
+            clear: both;
+            font-size: .8em;
+            opacity: .8
+        }
+
+        footer a {
+            color: inherit;
+            border-bottom-color: inherit
+        }
+
+        footer p:first-child {
+            text-align: center
+        }
+
+        #archives {
+            margin-bottom: 2em
+        }
+
+        #archives ul li {
+            list-style: none;
+            margin: 0;
+            margin-left: 2em
+        }
+
+        #archives h2+ul {
+            margin: 0
+        }
+
+        #archives h2+ul li {
+            padding: .25em 0
+        }
+
+        @media(max-width:30em) {
+            body>header {
+                display: block;
+                padding: .2em 0
+            }
+
+            #entries {
+                margin-top: 0;
+                padding-top: 0
+            }
+        }
+
+        @media(max-width:60em) {
+            body {
+                padding-bottom: 100px
+            }
+        }
+
+        @media(max-device-width:480px),
+        (max-device-height:480px) and (orientation:landscape) {
+
+            #entries>.post>.content,
+            #entries>hr {
+                overflow: hidden;
+                visibility: hidden;
+                margin: 0;
+                padding: 0;
+                height: 0
+            }
+        }
+    </style>
+    <style>
+        .highlight .hll {
+            background-color: #ffc
+        }
+
+        .highlight .c {
+            color: #408080;
+            font-style: italic
+        }
+
+        .highlight .k {
+            color: #800
+        }
+
+        .highlight .o {
+            color: #666;
+            font-weight: bold
+        }
+
+        .highlight .cm {
+            color: #8f5902
+        }
+
+        .highlight .cp {
+            color: #bc7a00
+        }
+
+        .highlight .c1 {
+            color: #8f5902
+        }
+
+        .highlight .cs {
+            color: #8f5902
+        }
+
+        .highlight .kc {
+            color: #008000;
+            font-weight: bold
+        }
+
+        .highlight .kd {
+            color: #008000;
+            font-weight: bold
+        }
+
+        .highlight .kn {
+            color: #008000;
+            font-weight: bold
+        }
+
+        .highlight .kp {
+            color: #008000
+        }
+
+        .highlight .kr {
+            color: #204a87;
+            font-weight: bold
+        }
+
+        .highlight .kt {
+            color: #204a87
+        }
+
+        .highlight .m {
+            color: #666
+        }
+
+        .highlight .s {
+            color: #ba2121
+        }
+
+        .highlight .nc {
+            color: #00f;
+            font-weight: bold
+        }
+
+        .highlight .no {
+            color: #800
+        }
+
+        .highlight .nl {
+            color: #a0a000
+        }
+
+        .highlight .nn {
+            color: #800;
+            font-weight: bold
+        }
+
+        .highlight .nt {
+            color: #008000;
+            font-weight: bold
+        }
+
+        .highlight .nv {
+            color: inherit
+        }
+
+        .highlight .ow {
+            color: #a2f;
+            font-weight: bold
+        }
+
+        .highlight .sb {
+            color: #ba2121
+        }
+
+        .highlight .sc {
+            color: #ba2121
+        }
+
+        .highlight .sd {
+            color: #ba2121;
+            font-style: italic
+        }
+
+        .highlight .s2 {
+            color: #ba2121
+        }
+
+        .highlight .se {
+            color: #b62;
+            font-weight: bold
+        }
+
+        .highlight .sh {
+            color: #ba2121
+        }
+
+        .highlight .si {
+            color: #b68;
+            font-weight: bold
+        }
+
+        .highlight .sx {
+            color: #008000
+        }
+
+        .highlight .sr {
+            color: #b68
+        }
+
+        .highlight .s1 {
+            color: #ba2121
+        }
+
+        .highlight .ss {
+            color: #19177c
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="/">Adam Prescott</a></h1>
+    </header>
+
+
+
+
+
+    <article id="entry" class="post">
+        <header>
+            <h1>Scoring seki in the game of go</h1>
+
+            <time datetime="2016-05-17">May 17th 2016</time>
+
+        </header>
+
+        <p>I’m building a web-based version of the game of go called Tenuki. You can read more about it and try out the live examples over at the <a href="https://github.com/aprescott/tenuki.js">Tenuki GitHub repo</a>. The general idea is to provide a complete, mobile-friendly, self-contained go board with enough logic to start and end a game, but which is easy for others to build on top of.</p>
+
+        <p>One of the features I’ve been working on is correctly scoring seki at the end of a game. I thought I’d write up how <a href="https://github.com/aprescott/tenuki.js/pull/11">my solution</a> works, along with some of the machinery used in implementing it.</p>
+
+        <p>The core ideas here aren’t really new. Other people have discussed far more intelligent and general go analysis using ideas I’ve totally borrowed. See the list at the end for more. The approach itself is a variation of one Bill Shubert (“wms”) gave <a href="https://groups.google.com/d/msg/rec.games.go/K_vmgZZdhlA/eY_OBhG88V4J">back in 1996</a> — one difference is that instead of using virtual “grey stones”, I fill points in with an alternating checkered pattern on a grid.</p>
+
+        <p>I’d like to be able to give some measure of the algorithm’s accuracy, but I haven’t run it against a large enough testing dataset.</p>
+
+        <h2 id="basics">Basics</h2>
+
+        <p>This post is long enough as it is, so I won’t go over how to actually play go. If you’ve never played or don’t know the rules, I recommend <a href="http://playgo.to/iwtg/en/">The Interactive Way to Go</a> — you can learn the basics in all of 10-15 minutes.</p>
+
+        <p>For a quick explanation on the relevance of “eyes”, <a href="https://en.wikipedia.org/wiki/Life_and_death">Wikipedia’s page on life and death</a> is quite good. One main thing to understand is <a href="https://en.wikipedia.org/wiki/Rules_of_go#Territory">territory versus neutral points</a>.</p>
+
+        <h2 id="the-setup">The Setup</h2>
+
+        <p>Tenuki supports dead stone marking at the end of a game. Both players toggle stones as dead (shown as semi-transparent) which effectively removes them from the board.</p>
+
+        <p><img alt="Dead stone marking" src="/images/posts/seki/scoring-with-dead-stones.png" width="576" /></p>
+
+        <p>In the general case — say, in the middle of a game — correctly analysing the life and death status of stones is very difficult. It requires a sufficient approximation of perfect play from an unsettled position.</p>
+
+        <p>But at the <em>end</em> of the game like this, the players have said which stones are dead. Since we already know that stones on the board are alive in some form, score calculation is simplified a bit: add up all the empty intersections surrounded by stones of a single colour.</p>
+
+        <p>Sadly, seki ruins it.</p>
+
+        <h2 id="seki">Seki</h2>
+
+        <p><a href="http://senseis.xmp.net/?Seki">Seki</a> is a state of mutual coexistence where neither side can capture the other.</p>
+
+        <p><img alt="A corner seki" src="/images/posts/seki/corner-seki.png" width="452" /></p>
+
+        <p>If black plays at the marked □ point, white immediately captures black. Similarly, if white plays there, black immediately captures white. Neither wants to play that point, so nothing is captured and both players are alive in the corner — it’s a seki.</p>
+
+        <p>What makes this interesting is that each player locally has only 1 eye, less than the 2 eyes you usually need to permanently avoid capture. (Black’s eye is in the very top left corner, if it’s not clear.)</p>
+
+        <p>Ordinarily, eyes count as points of territory during scoring, so black and white would each have 1 point in the corner. However, in Japanese-styling rules, <em>eyes in seki are not scored</em> and instead both sides have 0 points.</p>
+
+        <p>To score the game correctly, we need to discount eyes in seki. To discount eyes in seki, we obviously have to first know there even <em>is</em> a seki.</p>
+
+        <p>Can we easily detect seki and score the game correctly, given that we know the stones are alive in <em>some</em> form?</p>
+
+        <h2 id="a-strict-rule">A Strict Rule</h2>
+
+        <p>The 1989 Japanese rules don’t treat eyes in seki as territory. The definition is based on neutral points (or <em>dame</em>).</p>
+
+        <blockquote>
+            <p>Empty points surrounded by the live stones of just one player are called “eye points.” Other empty points are called “dame.” Stones which are alive but possess dame are said to be in “seki.” Eye points surrounded by stones that are alive but not in seki are called “territory,” each eye point counting as one point of territory.</p>
+        </blockquote>
+
+        <p>Seki is unambiguous under this rule. For each neutral point on the board, find all neighbouring stones (which are now treated as alive in seki), and then find all supposed-territory surrounded by those stones. Discount all supposed-territory points you find.</p>
+
+        <p>In a formal setting like an official tournament, it’s not unreasonable to have players play all neutral points they possibly can. Then, the only remaining neutral points will be part of a seki, and the strict algorithm will work just fine. You can see this by looking back at the starting example of the corner seki:</p>
+
+        <p><img alt="A corner seki" src="/images/posts/seki/corner-seki.png" width="452" /></p>
+
+        <p>The marked point is neutral, so the neighboring black and white stones are in seki. Done.</p>
+
+        <p>For informal settings, however, things break down quite quickly. In an online game, some neutral points will be on the board simply because neither player wants to spend the time making literally pointless moves.</p>
+
+        <p><img alt="Example showing the problem with strict seki" src="/images/posts/seki/strict-seki.png" width="400" /></p>
+
+        <p>On this board, the top left point is neutral. Should the white group be treated as seki? The strict algorithm says “yes” and ignores all white territory during scoring, despite there being <em>3</em> eyes, more than enough for unconditional life. Something more relaxed would be good.</p>
+
+        <h2 id="assumptions-and-outline">Assumptions and Outline</h2>
+
+        <p>So we’ve got 3 assumptions to start:</p>
+
+        <ol>
+            <li>All dead stones have been marked by players as part of the scoring phase and are not considered part of the board.</li>
+            <li>There may be some neutral points left on the board.</li>
+            <li>Scoring is <em>not the same as perfect, optimal play</em>.</li>
+        </ol>
+
+        <p>The goal is to try and correctly detect seki so we can ignore points that aren’t actually territory.</p>
+
+        <p>The gist of the algorithm is:</p>
+
+        <ol>
+            <li>Fill in all neutral points.</li>
+            <li>Fill in false eyes.</li>
+            <li>If a group can’t make 2 eyes, then it’s in seki and any points it surrounds are not counted as territory.</li>
+        </ol>
+
+        <p>To flesh this out, we need some tooling in order to get a good idea of what it means to, say, count a group’s eyes.</p>
+
+        <h2 id="definitions">Definitions</h2>
+
+        <p>A <em>stone</em> is a non-empty intersection. It’s either <em>black</em> or <em>white</em>.</p>
+
+        <p>A <em>block</em> is a maximal connected set of stones. “Connected” means there is a path through adjacent intersections such that all intersections on that path are the same colour. (A collection of blocks of one colour are sometimes referred to as a <em>group</em>.)</p>
+
+        <p>For example, this 5×5 board has 4 blocks (3 white, 1 black):</p>
+
+        <p><img alt="Board position to show blocks" src="/images/posts/seki/blocks.png" width="402" /></p>
+
+        <p>A <em>region</em>, similar to a block, is a maximal connected set of <em>empty</em> intersections.</p>
+
+        <p>The <em>boundary stones</em> of a region <em>R</em> is the set of stones which are adjacent to <em>R</em> but which are not themselves in <em>R</em>. In other words, the stones at the edge of the region.</p>
+
+        <p>A region is <em>controlled</em> if all boundary stones of the region are a single colour. A controlled region is <em>white</em> if its boundary stones are all white. (Similarly for a region being <em>black</em>.) This is the idea of “surrounded” intersections: intersections that would be scored as territory before analysing seki. If a region is not controlled, then it’s <em>neutral</em>. (We can also say a single intersection is controlled or neutral if it’s in a controlled or neutral region, respectively.)</p>
+
+        <p>In the above board, there are two regions, one black and one white. The boundary stones of the white region on the left is the set of all white stones: all white stones are adjacent to some point in the region. (Note that the boundary stones may be composed of multiple blocks.)</p>
+
+        <p>To determine the boundary stones of a region, you can pick any point in the region and start following all empty neighbours along all paths, stopping at stones. Whichever stones you hit, those are the boundary stones.</p>
+
+        <p>Two regions are <em>directly related</em> if they share a common block of boundary stones. (This is along the lines of [2] in the references.)</p>
+
+        <p><img alt="Marked A, B, C white regions" src="/images/posts/seki/regions-marked.png" width="808" /></p>
+
+        <p>Here there are 3 white regions, shown with <em>A</em>, <em>B</em>, and <em>C</em>.</p>
+
+        <p>Note that any two pairs of the <em>A</em>-region, <em>B</em>-region and <em>C</em>-region are directly related. For example, the <em>A</em>-region and <em>B</em>-region are directly related because they share the top-most white block.</p>
+
+        <p><img alt="Two white regions that are adjacent to each other" src="/images/posts/seki/adjacent-regions.png" width="326" /></p>
+
+        <p>Similarly, on this board, there are two directly related white regions, because they share a common block in the center.</p>
+
+        <p>Related regions will obviously come in handy for determining eye count.</p>
+
+        <p>The <em>expansion</em> of a region is defined as the recursive merger of all directly related regions (again, as in [2]). Consider the three controlled regions shown by <script type="math/tex">A</script>, <script type="math/tex">B</script>, <script type="math/tex">C</script> on this board:</p>
+
+        <p><img alt="Board position to show expansion of a region" src="/images/posts/seki/region-expansion.png" width="658" /></p>
+
+        <p>
+            <script type="math/tex">A</script> is directly related to <script type="math/tex">B</script>, and <script type="math/tex">B</script> is directly related to <script type="math/tex">C</script>, but <script type="math/tex">A</script> is not directly related to <script type="math/tex">C</script> by the definition. By following the related-ness of <script type="math/tex">A</script> to <script type="math/tex">B</script>, then <script type="math/tex">B</script> to <script type="math/tex">C</script>, we can “expand” <script type="math/tex">A</script> into <script type="math/tex">\{A, B, C, ...\}</script>, forming the transitive closure of the “is-directly-related” property.
+        </p>
+
+        <p>(Note that the expansion here technically includes neutral regions. You could restrict the expansion to cover only <em>controlled</em> regions of the same colour, but since we’re going to fill in neutral points, it’s irrelevant here.)</p>
+
+        <p>Accounting for this expansion, we can say that <script type="math/tex">A</script> is <em>related</em> to <script type="math/tex">C</script>, meaning that there is some sequence of directly-related associations between <script type="math/tex">A</script> and <script type="math/tex">C</script>.</p>
+
+        <p>Following the definition of Ext(<script type="math/tex">R</script>) in [3], the <em>boundary length</em> of a region <script type="math/tex">R</script> is the number of grid points containing <script type="math/tex">R</script>, plus the number of boundary stones of <script type="math/tex">R</script>. For a non-corner, non-side region, this is exactly the same as the number of boundary stones. At the edge of the board, the boundary length is calculated as if stones were present “on the outside” of the board.</p>
+
+        <p><img alt="A square-four region in the corner to demonstrate boundary length" src="/images/posts/seki/boundary-length.png" width="300" /></p>
+
+        <p>So the boundary length of the top left empty region is 8:</p>
+
+        <ul>
+            <li>4 intersections occupied by white, adjacent to the region, forming part of the boundary stones.</li>
+            <li>2 “grid points” for the top side of the board.</li>
+            <li>2 “grid points” for the left side of the board.</li>
+        </ul>
+
+        <p>Basically, the boundary length accounts for the boundary of the board itself.</p>
+
+        <h2 id="eye-counting-with-the-boundary-length">Eye Counting with the Boundary Length</h2>
+
+        <p>By enumerating possible cases, you can get the <em>eye count</em> (or <em>number of eyes</em>) for a region based solely on boundary length and recognition of a few shapes. For a more complete explanation, see [3], but the calculation leads to:</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="text-align: left">Boundary Length</th>
+                    <th style="text-align: left">Number of Eyes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: left">≤ 6</td>
+                    <td style="text-align: left">1</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">7</td>
+                    <td style="text-align: left">1.5</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">8 (square four)</td>
+                    <td style="text-align: left">1</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">8 (curved four)</td>
+                    <td style="text-align: left">2</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">8 (any other shape)</td>
+                    <td style="text-align: left">1.5</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">9 (containing a square four)</td>
+                    <td style="text-align: left">1.5</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">9 (not containing a square four)</td>
+                    <td style="text-align: left">2</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">≥ 10</td>
+                    <td style="text-align: left">2</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>A non-integer value like 1.5 means that if the player controlling the region plays first, then the eye count is 2. If the opponent plays first, the eye count is 1.</p>
+
+        <p><img alt="A straight-three region on the side to demonstrate boundary length" src="/images/posts/seki/boundary-length-side.png" width="388" /></p>
+
+        <p>The white region on the above board has a boundary length of 8 and doesn’t contain a square-four or curved-four shape. Following the table, it has an eye count of 1.5: if black plays in middle, white has 1 eye; if white plays in the middle, then white has 2.</p>
+
+        <h2 id="main-seki-detection">Main Seki Detection</h2>
+
+        <p>We’ve now got enough to build up an initial version of a seki detection algorithm.</p>
+
+        <p>To determine if a controlled region <script type="math/tex">R</script> should be ignored due to seki:</p>
+
+        <ol>
+            <li>Expand <script type="math/tex">R</script> into <script type="math/tex">\{ R_1, R_2, R_3, \dots, R_N \}</script>.</li>
+            <li>Find the eye counts for each region: <script type="math/tex">\{ E_1, E_2, E_3, \dots, E_N \}</script>.</li>
+            <li>Sum all of the eye counts, making sure to <code class="highlighter-rouge">Math.ceil()</code> each of them to always get the highest value: <script type="math/tex">\left\lceil E_1 \right\rceil + \left\lceil E_2 \right\rceil + \dots + \left\lceil E_N \right\rceil</script>.</li>
+            <li>If the sum is &lt; 2, then the group surrounding all regions in the expansion can’t make 2 eyes. Since the board is assumed to be alive (otherwise a player would have marked it dead), then the group is alive in seki.</li>
+            <li>If the group is in seki from the previous step, then remove from the set of scored controlled points any point which is in one of the regions <script type="math/tex">\{ R_1, R_2, R_3, \dots, R_N \}</script>.</li>
+        </ol>
+
+        <p>After all the removals in step (5), the remaining controlled points are territory.</p>
+
+        <h2 id="problems-due-to-false-eyes-and-neutral-points">Problems Due to False Eyes and Neutral Points</h2>
+
+        <p>This main way of detecting seki works quite well, but has a few pitfalls. Consider this board:</p>
+
+        <p><img alt="Seki with 2 false eyes" src="/images/posts/seki/neutral-point-corner-seki.png" width="344" /></p>
+
+        <p>Running the algorithm over the white regions on this board will lead to the wrong conclusion that the white has 2 eyes, which is definitely not the case. The 2 “eyes” for white are <a href="http://senseis.xmp.net/?FalseEye">false</a>, but because of the black stones they can also never be filled.</p>
+
+        <p>We need a way to refine things so that this corner position is correctly treated as seki. We can do so with two preliminary steps:</p>
+
+        <ol>
+            <li>Fill in neutral points.</li>
+            <li>Fill in false eyes.</li>
+        </ol>
+
+        <h2 id="filling-neutral-points">Filling Neutral Points</h2>
+
+        <p>To fill in all neutral points, simply change them from empty to some other colour.</p>
+
+        <p>This leaves an interesting question though: <em>what colour do you fill the neutral points with?</em> For now, let’s say they’re all arbitrarily filled by one fixed colour. This will cause problems in other situations, but it’s a start.</p>
+
+        <h2 id="filling-false-eyes">Filling False Eyes</h2>
+
+        <p>When counting eyes we need to be sure to ignore <a href="http://senseis.xmp.net/?FalseEye">false eyes</a>. In this case, we’re going to look at very specific false eyes: those that are points of “obvious capture” — a false eye which would be filled, if, after filling all neutral points, it’s a direct point of capture of some neighboring block. For a simple example:</p>
+
+        <p><img alt="Marked false eye point due to an obvious capture" src="/images/posts/seki/clear-capture-non-territory-point.png" width="630" /></p>
+
+        <p>No player would count the marked □ point as a point of territory. It’s an obvious false eye because filling in the neutral point in the top left corner leaves stones that can be immediately captured by playing at □:</p>
+
+        <p><img alt="Marked false eye point due to an obvious capture, with a stone played" src="/images/posts/seki/clear-capture-non-territory-point-in-atari.png" width="630" /></p>
+
+        <p>Let’s say an intersection is “false-ish” if it meets all these requirements:</p>
+
+        <ol>
+            <li>It is empty.</li>
+            <li>It has at least one non-empty (“occupied”) neighbor.</li>
+            <li>For an intersection on the edge of the board (the “first line”), it has 2 occupied neighbours with a colour opposite of any occupied neighbour. Anywhere else, it has 3 occupied opposing diagonals.</li>
+            <li>On the edge of the board, it has at least 1 occupied opposing diagonal. Anywhere else, then at least 2 occupied opposing diagonals.</li>
+        </ol>
+
+        <p>Note that <em>all neutral points have already been filled</em>. All remaining empty points are by definition controlled, and so we don’t need to worry about neighbours of different colours.</p>
+
+        <p>So here’s a simple false-ish eye:</p>
+
+        <p><img alt="Simple false-ish eye in the corner" src="/images/posts/seki/false-ish-eye.png" width="210" /></p>
+
+        <p>The top left point is controlled because it’s fully surrounded by white stones. But the black stone on its diagonal means that, eventually, it must be filled in by one of the players. (Since this is the end of the game, the assumption is that all other stones are alive, so there’s no question of an outside group being captured.)</p>
+
+        <p>Why the “-ish” in “false-ish”? Because it’s not enough to blindly check diagonals. Take this position:</p>
+
+        <p><img alt="2 false-ish eyes that aren't false" src="/images/posts/seki/not-false-eyes.png" width="534" /></p>
+
+        <p>Both <em>A</em> and <em>B</em> are false-ish because of the shared diagonal black stone. But because of the 2 full eyes elsewhere, neither <em>A</em> nor <em>B</em> should ever be filled.</p>
+
+        <p>If, however, the empty bottom-right intersection were filled, then it becomes more clear that <em>B</em> should definitely not be a point of territory:</p>
+
+        <p><img alt="False-ish eyes that become false if other eyes are filled" src="/images/posts/seki/now-false-eye.png" width="534" /></p>
+
+        <p>The reason is because now the 5-stone block next to <em>B</em> is 1 move away from capture at <em>B</em>.</p>
+
+        <p>This gives us a way of filling in (and defining, really) the obvious false eyes we care about:</p>
+
+        <ol>
+            <li>If there are no more false-ish points on the board, then stop.</li>
+            <li>Otherwise, take the next false-ish point, call it <em>F</em>.</li>
+            <li>If a neighbour of <em>F</em> can be captured in one move, then fill <em>F</em> with the same colour as any occupied neighbour. (<em>F</em> is the capture point.)</li>
+            <li>Start again at (1).</li>
+        </ol>
+
+        <p>Again, the only reason this is well-defined (e.g., for step (3)’s choice of colour) is that we’ve already filled in neutral points.</p>
+
+        <p>Let’s see what happens locally with the above board after running through this loop. We start with this board:</p>
+
+        <p><img alt="Worked example of eye filling, part 1" src="/images/posts/seki/eye-filling-1.png" width="534" /></p>
+
+        <p>Then, <em>B</em> is filled:</p>
+
+        <p><img alt="Worked example of eye filling, part 2" src="/images/posts/seki/eye-filling-2.png" width="534" /></p>
+
+        <p>Then <em>A</em> is neighbouring a 7-stone white block that can be immediately captured, so it too is filled:</p>
+
+        <p><img alt="Worked example of eye filling, part 3" src="/images/posts/seki/eye-filling-3.png" width="534" /></p>
+
+        <p>And now, we’re done.</p>
+
+        <p>Since <em>A</em> and <em>B</em> were filled in, they’re not scored as territory.</p>
+
+        <p>Moreover, note that the seki detection algorithm will count the eyes of the white group as less than 2 (because it has only 1 eye). The 1 eye will be treated as non-territory. A player would likely then mark this entire white group dead, which effectively removes it from the board.</p>
+
+        <p>So as a total side-effect of filling in points to get a correct <em>seki</em> algorithm, <em>certain points that would have been territory are ignored</em>, potentially before any stones have been marked as dead.</p>
+
+        <h2 id="filling-is-not-smart">Filling is not Smart</h2>
+
+        <p>That last point is worth a bit more thought. Note one of the original assumptions:</p>
+
+        <blockquote>
+            <p>Scoring is <em>not the same as perfect, optimal play</em>.</p>
+        </blockquote>
+
+        <p>Filling in neutral points and false eyes in this way can’t detect certain situations, and isn’t intended to. Take this, for example:</p>
+
+        <p><img alt="Snapback example" src="/images/posts/seki/snapback.png" width="534" /></p>
+
+        <p>There’s a <a href="http://senseis.xmp.net/?Snapback">snapback</a> for black at <em>B</em>. If an algorithm fully read this sequence out with perfect play, it would decide that <em>B</em> is actually not a point of territory, then fill in <em>B</em>, then treat <em>A</em> as non-territory and fill that in too. <em>The algorithm doesn’t do this.</em> The snapback play at <em>B</em> is not detected. If both players leave the stones on the board like this, then all white regions are counted as territory. The scorer defers to player judgement here, it does not play perfectly.</p>
+
+        <h2 id="seki-detection-with-points-filled">Seki Detection with Points Filled</h2>
+
+        <p>The algorithm we now have is:</p>
+
+        <ol>
+            <li>Fill neutral points.</li>
+            <li>Fill obvious false eyes.</li>
+            <li>Treat remaining controlled regions as potential territory.</li>
+            <li>Counting eyes of each expanded region, exclude a controlled region if it’s part of a seki.</li>
+        </ol>
+
+        <p>With the addition of steps (1) and (2) we can see what the previous edge-case board looked like:</p>
+
+        <p><img alt="Corner seki filling example, part 1" src="/images/posts/seki/corner-seki-filling-1.png" width="456" /></p>
+
+        <p>First, fill the neutral points:</p>
+
+        <p><img alt="Corner seki filling example, part 2" src="/images/posts/seki/corner-seki-filling-2.png" width="456" /></p>
+
+        <p>Then fill the false-ish eyes neighbouring capturable groups:</p>
+
+        <p><img alt="Corner seki filling example, part 3" src="/images/posts/seki/corner-seki-filling-3.png" width="456" /></p>
+
+        <p>(Note that the stones added aren’t played as if they were regular moves. Actually capturing stones by removing them doesn’t happen!)</p>
+
+        <p>Since no eyes are left, the original white regions will be ignored as part of the calculation.</p>
+
+        <h2 id="example-with-two-1-eyed-groups-in-seki">Example with Two 1-Eyed Groups in Seki</h2>
+
+        <p>Take this example:</p>
+
+        <p><img alt="Seki with two 1-eyed groups, part 1" src="/images/posts/seki/two-1-eye-groups-1.png" width="430" /></p>
+
+        <p><em>A</em> is neutral. <em>B</em> is an eye controlled by black, <em>C</em> is an eye controlled by white.</p>
+
+        <p>First, fill <em>A</em>.</p>
+
+        <p><img alt="Seki with two 1-eyed groups, part 2" src="/images/posts/seki/two-1-eye-groups-2.png" width="430" /></p>
+
+        <p>Each empty region (after expansion) sums to only 1 eye each, so the surrounding stones are alive in seki, and <em>B</em> and <em>C</em> are discounted as territory.</p>
+
+        <h2 id="which-colour-for-filling-neutral-points">Which Colour for Filling Neutral Points?</h2>
+
+        <p>There’s one remaining question around filling neutral points: which colour do you use?</p>
+
+        <p>Using a fixed colour doesn’t work, because some neutral points don’t affect connections between groups, and others do. Take a board like this:</p>
+
+        <p><img alt="Two 1-eyed white groups separated by points that can always be filled to connect the groups" src="/images/posts/seki/neutral-colour-choice.png" width="534" /></p>
+
+        <p>The two 1-eyed white groups are effectively connected. There are 3 ways to connect, and white only needs 1 of them. Ideally this should be treated as white territory, not a seki. Since filling in neutral points is needed to detect seki, the 3 neutral points in the middle will be filled with <em>some</em> colour, but which one?</p>
+
+        <p>If the choice of fill colour is white, then it’s all fine because the groups connect:</p>
+
+        <p><img alt="Two 1-eyed white groups now connected by filling all neutrals with white stones" src="/images/posts/seki/neutral-colour-choice-with-white.png" width="534" /></p>
+
+        <p>If the choice is black, then it doesn’t work, because now the groups are fully separated and are treated as non-scoring:</p>
+
+        <p><img alt="Two 1-eyed white groups now separated by filling all neutrals with white stones" src="/images/posts/seki/neutral-colour-choice-with-black.png" width="534" /></p>
+
+        <p>(Note that black and white could reverse roles. A single fixed colour will always have this problem.)</p>
+
+        <p>One workaround is to use a colour which acts as if it is <em>both</em> black and white. This is the approach taken in <a href="https://groups.google.com/d/msg/rec.games.go/K_vmgZZdhlA/eY_OBhG88V4J">[6]</a>: “grey” stones acting as simultaneously black <em>and</em> white. The two 1-eyed white groups connect, and are counted as territory.</p>
+
+        <p>Use of grey stones in this way suffers from the problem in <a href="https://groups.google.com/d/msg/rec.games.go/K_vmgZZdhlA/eY_OBhG88V4J">[6]</a>. Consider this board, which contains a seki in the lower left:</p>
+
+        <p><img alt="Seki where both sides could connect out with the use of grey stones" src="/images/posts/seki/seki-groups-connecting-out.png" width="536" /></p>
+
+        <p>The marked points form <a href="http://senseis.xmp.net/?BambooJoint">bamboo joint</a> connections. Consider the <em>A</em> points: white should be able to connect with at least one of the <em>A</em> points, which will also cut off the lower left black group. Since black has a similar position with the <em>B</em> points, the two 1-eye groups are in seki because of the neutral point between them.</p>
+
+        <p>But with grey stones, all <em>A</em> and <em>B</em> points are filled such that both 1-eye groups connect out. The eye calculation comes out as ≥ 2 and the eyes end up counting in territory.</p>
+
+        <h2 id="avoiding-false-negatives-with-alternate-play">Avoiding False Negatives with Alternate Play</h2>
+
+        <p>It seems like the use of grey stones introduces problems because it creates board states that can’t actually exist under any normal sequence of moves. A board state is being evaluated where some points are simultaneously two colours. Is there a way to fill in neutral points in a way that reflects playing regular moves?</p>
+
+        <p>Instead of using grey stones, the idea is to more accurately simulate real play by using alternate colours. Black, white, black, and so on. This leads to a few design questions:</p>
+
+        <ol>
+            <li>Are regions filled independently? That is, if a region is filled with black, white, black, does the next region start with black, or white?</li>
+            <li>In which order do you fill in the points?</li>
+        </ol>
+
+        <p>The first question is concerned with play dependence across regions. It seems reasonable to say that all regions are independent and to always choose black for the first move in each region.</p>
+
+        <p>Running with that idea, the previous board (which is seki if detected correctly) changes from this:</p>
+
+        <p><img alt="Seki where both sides could connect out with the use of grey stones" src="/images/posts/seki/seki-groups-connecting-out.png" width="536" /></p>
+
+        <p>To, say, this, after playing <em>A</em> points and <em>B</em> points with alternate colours:</p>
+
+        <p><img alt="Seki where both sides could connect out with the use of grey stones, but where alternate play has filled in each point instead" src="/images/posts/seki/seki-groups-connecting-out-alternate-play.png" width="536" /></p>
+
+        <p>This is now correctly detected as seki by counting eyes. Note that the choice of which of the <em>A</em> and <em>B</em> points to start with has no change on the outcome.</p>
+
+        <p>The second question — which order to fill in the points — is an issue for groups that are “loosely” connected. To get a better understanding, let’s say a group is one intersection away from being separated:</p>
+
+        <p><img alt="Two 1-eyed groups that have only 1 empty intersection separating them" src="/images/posts/seki/1-space-separated-or-connected.png" width="534" /></p>
+
+        <p>If we score this board, what happens with the white stones? If the players really did end the game with this board position unresolved, then the answer depends on which colour is chosen. Critically, without “grey” stones in the scoring algorithm, this can <em>never work reliably</em>.</p>
+
+        <p>If <em>A</em> is filled with white, white connects and has 2 points. If <em>A</em> is filled with black, white is separated and has only 1-eye groups adding up to 0 points.</p>
+
+        <p>By flipping the colour of all stones, any initial colour choice in this case will break. If the initial colour choice is not always fixed to, say, black, and is instead based on the last stone played in the previous region, then correctly scoring this will depend on the parity (odd or even) of the number of previously played neutral points before filling in this neutral region.</p>
+
+        <p>So scoring this without grey stones is inherently broken. However, it’s actually unlikely that the board would be left in this unresolved state by the time scoring starts: both sides will <em>really</em> want to play <em>A</em>. As such, <em>it isn’t a goal to score this properly</em>.</p>
+
+        <p>Consider a board like this, as a simpler version of the more complicated board above:</p>
+
+        <p><img alt="Two 1-eyed groups separated by a bamboo joint" src="/images/posts/seki/2-space-separated-or-connected.png" width="534" /></p>
+
+        <p>Then expand the neutral region to the right so its gap is bigger:</p>
+
+        <p><img alt="Two 1-eyed groups separated by a 2-by-2 region" src="/images/posts/seki/4-space-separated-or-connected.png" width="534" /></p>
+
+        <p>In what order should the 4 points be filled in? Following a top-down, left-to-right pattern (again, starting with black) means the white groups stay disconnected. Fill <em>A</em>, <em>C</em>, <em>B</em>, <em>D</em>:</p>
+
+        <p><img alt="A 2-by-2 region that has been filled in with alternate play" src="/images/posts/seki/4-space-separated-or-connected-2.png" width="534" /></p>
+
+        <p>However, following the transposed path <em>A</em>, <em>B</em>, <em>C</em>, <em>D</em> leads to a different outcome:</p>
+
+        <p><img alt="A 2-by-2 region that has been filled in with alternate play following a different path" src="/images/posts/seki/4-space-separated-or-connected-3.png" width="534" /></p>
+
+        <p>With grey stones, the white group is alive with 2 eyes. Without grey stones, the life status depends on the order.</p>
+
+        <p>Similar regions of neutral points lead to similar outcomes. For example, this is also order-dependent:</p>
+
+        <p><img alt="A region of 3 intersections separating two 1-eyed groups" src="/images/posts/seki/4-space-separated-or-connected-4.png" width="534" /></p>
+
+        <p>It seems that we’d like two things:</p>
+
+        <ol>
+            <li>Groups separated by a gap of 1 should be treated as connected. For example, the bamboo joint.</li>
+            <li>Anything with a bigger gap should be treated as disconnected.</li>
+        </ol>
+
+        <h2 id="using-a-checkered-pattern">Using a Checkered Pattern</h2>
+
+        <p>A filling strategy which seems to work is using a checkered pattern: fill the neutral intersections such that an intersection will have a colour different from its neighbors, forming a checkered grid.</p>
+
+        <p><img alt="A grid of alternating stones one very intersection" src="/images/posts/seki/alternating-grid.png" width="534" /></p>
+
+        <p>By checking subsets of a 2×2 neutral region, you can see that, with this filling method, groups are always left disconnected if they’re separated by a gap of 2, no matter which colour or intersection you start with:</p>
+
+        <p><img alt="An empty 2-by-2 region" src="/images/posts/seki/empty-2-by-2.png" width="234" /></p>
+
+        <p><img alt="An empty region of 3 intersections" src="/images/posts/seki/empty-curved-3.png" width="234" /></p>
+
+        <p><img alt="Another empty region of 3 intersections" src="/images/posts/seki/empty-curved-3-flipped.png" width="234" /></p>
+
+        <p><img alt="An empty 1-by-2 region of 2 intersections" src="/images/posts/seki/empty-bamboo.png" width="234" /></p>
+
+        <h2 id="references--other-work">References &amp; Other Work</h2>
+
+        <ol>
+            <li>“Recognizing Seki in Computer Go.” Niu, Kishimoto, Müller.</li>
+            <li>“An Improved Safety Solver for Computer Go.” Niu, Müller.</li>
+            <li>“Static analysis of life and death in the game of Go.” Chen, Chen.</li>
+            <li>“Life in the Game of Go.” Benson.</li>
+            <li>“When One Eye is Sufficient: A Static Classification.” Vilà, Cazenave.</li>
+            <li><a href="https://groups.google.com/d/msg/rec.games.go/K_vmgZZdhlA/eY_OBhG88V4J">A rec.games.go post by Bill Shubert (“wms”)</a>.</li>
+        </ol>
+
+
+
+        <aside>
+            <dl>
+
+                <dt>Previous post</dt>
+                <dd class="prev-post"><a href="/posts/bundler-audit">Automated vulnerability checking with bundler-audit and Travis</a></dd>
+
+
+
+            </dl>
+        </aside>
+
+    </article>
+
+
+    <footer>
+        <p>&copy; 2010&ndash;2018 <a href="/about">Adam Prescott</a></p>
+    </footer>
+
+
+    <script async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>
